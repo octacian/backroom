@@ -8,6 +8,7 @@ import (
 	"github.com/lmittmann/tint"
 	"github.com/octacian/backroom/api/cmd"
 	"github.com/octacian/backroom/api/config"
+	"github.com/octacian/backroom/api/db"
 	slogmulti "github.com/samber/slog-multi"
 )
 
@@ -33,6 +34,10 @@ func main() {
 
 	// Initialize configuration
 	config.Init()
+
+	// Initialize database connection
+	db.InitDB()
+	defer db.CloseDB()
 
 	// Initialize command line interface
 	cmd.Execute()

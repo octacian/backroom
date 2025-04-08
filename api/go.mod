@@ -3,6 +3,7 @@ module github.com/octacian/backroom/api
 go 1.24.0
 
 require (
+	github.com/fatih/color v1.13.0
 	github.com/go-jet/jet/v2 v2.13.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/lib/pq v1.10.9
@@ -32,6 +33,8 @@ require (
 	github.com/jackc/pgtype v1.14.4 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect

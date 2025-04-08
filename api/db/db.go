@@ -1,11 +1,15 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
+	"github.com/fatih/color"
+	"github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
 	"github.com/octacian/backroom/api/config"
 	"github.com/pressly/goose/v3"
@@ -52,9 +56,9 @@ func InitDB() {
 		"currConnections", stats.OpenConnections,
 	)
 
-	/* if config.RC.Environment == "development" {
+	if config.RC.Environment == "development" {
 		initDBLogger()
-	} */
+	}
 }
 
 // CloseDB closes the database connection.
@@ -67,14 +71,14 @@ func CloseDB() {
 }
 
 // initDBLogger initializes the database statement logger
-/* func initDBLogger() {
+func initDBLogger() {
 	postgres.SetQueryLogger(func(ctx context.Context, queryInfo postgres.QueryInfo) {
 		_, args := queryInfo.Statement.Sql()
 		slog.Debug("Executed SQL query", "args", args, "duration", queryInfo.Duration, "rows", queryInfo.RowsProcessed, "err", queryInfo.Err)
 
 		lines := strings.Split(queryInfo.Statement.DebugSql(), "\n")
 		for i, line := range lines {
-			fmt.Printf("%s\t%s\n", color.CyanString(fmt.Sprintf("%03d", i)), line)
+			fmt.Fprintf(os.Stderr, "%s\t%s\n", color.CyanString(fmt.Sprintf("%03d", i)), line)
 		}
 	})
-} */
+}
