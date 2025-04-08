@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: backroom
+    ports:
+      # Uncomment this section to expose the database on the host network.
+      # This is not recommended for production use.
+      - "5432:5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    networks:
+      - backroom_network
+
+networks:
+  backroom_network:
+    driver: bridge

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/lmittmann/tint"
+	"github.com/octacian/backroom/api/cmd"
 	"github.com/octacian/backroom/api/config"
 	slogmulti "github.com/samber/slog-multi"
-	"github.com/spf13/cobra-cli/cmd"
 )
 
 func main() {

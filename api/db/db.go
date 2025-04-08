@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/octacian/backroom/api/config"
 	"github.com/pressly/goose/v3"
 )
@@ -21,10 +22,10 @@ func InitDB() {
 	}
 
 	var err error
-	db_path := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	db_path := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
 		config.RC.Database.User, config.RC.Database.Password, config.RC.Database.Host, config.RC.Database.Name)
 
-	SQLDB, err = sql.Open("mysql", db_path)
+	SQLDB, err = sql.Open("postgres", db_path)
 	if err != nil {
 		slog.Error("Couldn't open SQL database", "user", config.RC.Database.User, "name", config.RC.Database.Name, "err", err)
 		os.Exit(1)
@@ -35,7 +36,7 @@ func InitDB() {
 		os.Exit(1)
 	}
 
-	if err := goose.SetDialect("mysql"); err != nil {
+	if err := goose.SetDialect("postgres"); err != nil {
 		slog.Error("Couldn't set database dialect for goose", "err", err)
 		os.Exit(1)
 	}
@@ -67,7 +68,7 @@ func CloseDB() {
 
 // initDBLogger initializes the database statement logger
 /* func initDBLogger() {
-	mysql.SetQueryLogger(func(ctx context.Context, queryInfo mysql.QueryInfo) {
+	postgres.SetQueryLogger(func(ctx context.Context, queryInfo postgres.QueryInfo) {
 		_, args := queryInfo.Statement.Sql()
 		slog.Debug("Executed SQL query", "args", args, "duration", queryInfo.Duration, "rows", queryInfo.RowsProcessed, "err", queryInfo.Err)
 

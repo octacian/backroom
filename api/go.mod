@@ -4,11 +4,11 @@ go 1.24.0
 
 require (
 	github.com/go-playground/validator/v10 v10.26.0
+	github.com/lib/pq v1.10.9
 	github.com/lmittmann/tint v1.0.7
 	github.com/pressly/goose/v3 v3.24.2
 	github.com/samber/slog-multi v1.4.0
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/cobra-cli v1.3.0
 	github.com/spf13/viper v1.10.1
 )
 
