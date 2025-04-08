@@ -4,6 +4,8 @@ go 1.24.0
 
 require (
 	github.com/fatih/color v1.13.0
+	github.com/go-chi/chi v1.5.5
+	github.com/go-chi/cors v1.2.1
 	github.com/go-jet/jet/v2 v2.13.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/lib/pq v1.10.9

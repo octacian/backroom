@@ -68,14 +68,12 @@ var cageCreateRecordCmd = &cobra.Command{
 		}
 
 		// Unmarshal JSON data into a db.JSONB object
-		var jsonb db.JSONB
-		if err := json.Unmarshal(jsonData, &jsonb); err != nil {
-			cmd.PrintErr("Error unmarshalling JSON data:", err)
-			return
+		record, err := cage.NewRecordFromString(key, string(jsonData))
+		if err != nil {
+			cmd.PrintErr("Error preparing JSON data:", err)
 		}
 
-		// Create a new caged record
-		record := cage.NewRecord(key, jsonb)
+		// Save a new caged record
 		if err := cage.CreateRecord(record); err != nil {
 			cmd.PrintErr("Error creating caged record:", err)
 			return
@@ -211,12 +209,12 @@ var cageDeleteCageCmd = &cobra.Command{
 		key := args[0]
 
 		// Delete all caged records by key
-		err := cage.DeleteCage(key)
+		count, err := cage.DeleteCage(key)
 		if err != nil {
 			cmd.PrintErr("Error deleting caged records:", err)
 			return
 		}
 
-		cmd.Println("All caged records deleted for key:", key)
+		cmd.Printf("%d caged records deleted for key: %s\n", count, key)
 	},
 }
