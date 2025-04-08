@@ -1,0 +1,9 @@
+/data/
+log.txt
+.DS_Store
+
+/api/api
+/api/backroom
+
+.env
+.env.yml
