@@ -9,6 +9,10 @@ import (
 
 // Config defines the expected environment variables (see .env.example.yml)
 type Config struct {
+	// Environment is the deployment environment.
+	// Valid values are "development", and "production".
+	Environment string `validate:"oneof=development production"`
+
 	// AppName is the user friendly name of the deployment (default: "backroom").
 	AppName string
 
