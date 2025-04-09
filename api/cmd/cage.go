@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/octacian/backroom/api/cage"
 	"github.com/octacian/backroom/api/db"
+	"github.com/octacian/backroom/api/hook"
 	"github.com/spf13/cobra"
 )
 
@@ -76,6 +77,12 @@ var cageCreateRecordCmd = &cobra.Command{
 		// Save a new caged record
 		if err := cage.CreateRecord(record); err != nil {
 			cmd.PrintErr("Error creating caged record:", err)
+			return
+		}
+
+		// Run hooks after creating the record
+		if err := hook.RunCreate(record); err != nil {
+			cmd.PrintErr("Error running hooks:", err)
 			return
 		}
 

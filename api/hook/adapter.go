@@ -11,15 +11,15 @@ import (
 
 var ErrBadAdapter = errors.New("bad adapter")
 
-// GenericAdapter defines expected execution methods for a hook adapter.
-type GenericAdapter interface {
+// Adapter defines expected execution methods for a hook adapter.
+type Adapter interface {
 	// Run executes the adapter with the given hook and cage.
 	Run(hook *Hook, cage *cage.Cage) error
 }
 
 // ALLOWED_ADAPTERS is a map of allowed hook adapter names to their respective
 // adapter implementations.
-var ALLOWED_ADAPTERS = map[string]GenericAdapter{
+var ALLOWED_ADAPTERS = map[string]Adapter{
 	"log": &LogAdapter{},
 }
 
@@ -38,7 +38,7 @@ func init() {
 
 // GetAdapter returns an adapter by name if it exists in ALLOWED_ADAPTERS.
 // Returns ErrBadAdapter if the adapter is not found.
-func GetAdapter(name string) (GenericAdapter, error) {
+func GetAdapter(name string) (Adapter, error) {
 	adapter, ok := ALLOWED_ADAPTERS[name]
 	if !ok {
 		return nil, ErrBadAdapter

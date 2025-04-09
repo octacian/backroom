@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
-	"github.com/octacian/backroom/api/cage"
 	"github.com/octacian/backroom/api/config"
+	"github.com/octacian/backroom/api/httphandle"
 	"github.com/spf13/cobra"
 )
 
@@ -46,12 +46,12 @@ func runServeCmd(cmd *cobra.Command, args []string) {
 	}))
 
 	// Set up routes
-	r.Post("/record/create/{key}", cage.HandleCreateRecord)
-	r.Get("/record/{uuid}", cage.HandleGetRecord)
-	r.Get("/cage/{key}", cage.HandleListRecordsByKey)
-	r.Get("/keys", cage.HandleListKeys)
-	r.Delete("/record/{uuid}", cage.HandleDeleteRecord)
-	r.Delete("/cage/{key}", cage.HandleDeleteRecordsByKey)
+	r.Post("/record/create/{key}", httphandle.HandleCreateRecord)
+	r.Get("/record/{uuid}", httphandle.HandleGetRecord)
+	r.Get("/cage/{key}", httphandle.HandleListRecordsByKey)
+	r.Get("/keys", httphandle.HandleListKeys)
+	r.Delete("/record/{uuid}", httphandle.HandleDeleteRecord)
+	r.Delete("/cage/{key}", httphandle.HandleDeleteRecordsByKey)
 	r.Get("/health", handleHealthCheck)
 
 	// Start the server

@@ -1,11 +1,13 @@
-package cage
+package httphandle
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/octacian/backroom/api/cage"
 	"github.com/octacian/backroom/api/db"
+	"github.com/octacian/backroom/api/hook"
 )
 
 // requestCreateRecord is the request body for creating a new caged record.
@@ -41,14 +43,20 @@ func HandleCreateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cage := NewRecord(key, req.Data)
-	if err := CreateRecord(cage); err != nil {
+	record := cage.NewRecord(key, req.Data)
+	if err := cage.CreateRecord(record); err != nil {
 		http.Error(w, "Failed to create record", http.StatusInternalServerError)
 		return
 	}
 
+	// Run hooks after creating the record
+	if err := hook.RunCreate(record); err != nil {
+		http.Error(w, "Failed to run hooks", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(cage)
+	json.NewEncoder(w).Encode(record)
 }
 
 // HandleGetRecord handles the retrieval of a caged record by its UUID.
@@ -66,13 +74,13 @@ func HandleGetRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cage, err := GetRecord(uuid)
+	record, err := cage.GetRecord(uuid)
 	if err != nil {
 		http.Error(w, "Failed to retrieve record", http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(cage)
+	json.NewEncoder(w).Encode(record)
 }
 
 // HandleListRecordsByKey handles the retrieval of all caged records by their key.
@@ -84,19 +92,19 @@ func HandleListRecordsByKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cages, err := ListRecordsByKey(key)
+	records, err := cage.ListRecordsByKey(key)
 	if err != nil {
 		http.Error(w, "Failed to retrieve records", http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(cages)
+	json.NewEncoder(w).Encode(records)
 }
 
 // HandleListKeys handles the retrieval of all unique cage keys.
 // Returns the keys as JSON.
 func HandleListKeys(w http.ResponseWriter, r *http.Request) {
-	keys, err := ListCageKeys()
+	keys, err := cage.ListCageKeys()
 	if err != nil {
 		http.Error(w, "Failed to retrieve keys", http.StatusInternalServerError)
 		return
@@ -121,7 +129,7 @@ func HandleDeleteRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := DeleteRecord(uuid); err != nil {
+	if err := cage.DeleteRecord(uuid); err != nil {
 		http.Error(w, "Failed to delete record", http.StatusInternalServerError)
 		return
 	}
@@ -143,7 +151,7 @@ func HandleDeleteRecordsByKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deleted, err := DeleteCage(key)
+	deleted, err := cage.DeleteCage(key)
 	if err != nil {
 		http.Error(w, "Failed to delete records", http.StatusInternalServerError)
 		return
