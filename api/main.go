@@ -9,6 +9,7 @@ import (
 	"github.com/octacian/backroom/api/cmd"
 	"github.com/octacian/backroom/api/config"
 	"github.com/octacian/backroom/api/db"
+	"github.com/octacian/backroom/api/hook"
 	slogmulti "github.com/samber/slog-multi"
 )
 
@@ -38,6 +39,9 @@ func main() {
 	// Initialize database connection
 	db.InitDB()
 	defer db.CloseDB()
+
+	// Initialize hook adapters
+	hook.InitAdapters()
 
 	// Initialize command line interface
 	cmd.Execute()

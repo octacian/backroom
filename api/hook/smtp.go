@@ -67,7 +67,7 @@ func (a *SMTPAdapter) Run(hook *Hook, record *cage.Record) error {
 	}
 
 	message.Subject(fmt.Sprintf("%s: new record created", record.Cage))
-	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("New %s record %s created\n\n%s", record.Cage, record.UUID, jsonText))
+	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("%s record %s created\n\n%s", record.Cage, record.UUID, jsonText))
 
 	if err := a.client.DialAndSend(message); err != nil {
 		return err

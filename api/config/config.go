@@ -9,12 +9,12 @@ import (
 
 // Hook defines a hook configuration for a cage.
 type Hook struct {
-	// Key is the identifier for the cage.
-	Key string `mapstructure:"key" validate:"required"`
+	// Cage is the identifier key for a cage.
+	Cage string `mapstructure:"cage" validate:"required"`
 
 	// Adapter is the name of the adapter to use for the hook.
-	// Valid values are "log", "mail".
-	Adapter string `mapstructure:"adapter" validate:"oneof=log mail"`
+	// Valid values are "log", "smtp".
+	Adapter string `mapstructure:"adapter" validate:"oneof=log smtp"`
 
 	// Target is the target log prefix or email for the hook.
 	Target string `mapstructure:"target" validate:"required"`
@@ -91,7 +91,7 @@ type Config struct {
 	DeliveryMethod string `mapstructure:"delivery_method" validate:"oneof=smtp sendgrid log-only"`
 
 	// Hooks stores hook configuration for caged records.
-	Hooks []Hook `mapstructure:"cages"`
+	Hooks []Hook `mapstructure:"hooks"`
 }
 
 // RC stores the current runtime configuration.

@@ -23,7 +23,8 @@ var ALLOWED_ADAPTERS = map[string]Adapter{
 	"log": &LogAdapter{},
 }
 
-func init() {
+// InitAdapters initializes any adapters requiring dynamic configuration.
+func InitAdapters() {
 	if config.RC.Mail.SMTP.Host != "" {
 		smtpAdapter, err := NewSMTPAdapter()
 		if err != nil {
@@ -33,6 +34,8 @@ func init() {
 
 		ALLOWED_ADAPTERS["smtp"] = smtpAdapter
 		slog.Info("SMTP adapter enabled", "host", config.RC.Mail.SMTP.Host)
+	} else {
+		slog.Debug("SMTP adapter disabled", "host", config.RC.Mail.SMTP.Host)
 	}
 }
 

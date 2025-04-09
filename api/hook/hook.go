@@ -1,8 +1,6 @@
 package hook
 
 import (
-	"fmt"
-
 	"github.com/octacian/backroom/api/config"
 )
 
@@ -11,14 +9,11 @@ type Hook config.Hook
 
 // ListHooksByCage retrieves all hooks for a given cage from the configuration.
 func ListHooksByCage(cageKey string) ([]Hook, error) {
-	var hooks []Hook
+	hooks := make([]Hook, 0)
 	for _, hook := range config.RC.Hooks {
-		if hook.Key == cageKey {
+		if hook.Cage == cageKey {
 			hooks = append(hooks, Hook(hook))
 		}
-	}
-	if len(hooks) == 0 {
-		return nil, fmt.Errorf("no hooks found for cage: %s", cageKey)
 	}
 	return hooks, nil
 }

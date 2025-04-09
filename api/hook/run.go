@@ -13,6 +13,7 @@ func RunCreate(record *cage.Record) error {
 	if err != nil {
 		return err
 	}
+	slog.Debug("Running create hooks", "cage", record.Cage, "hooks", hooks)
 
 	// run each hook
 	for _, hook := range hooks {

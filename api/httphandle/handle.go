@@ -2,6 +2,7 @@ package httphandle
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -44,6 +45,7 @@ func HandleCreateRecord(w http.ResponseWriter, r *http.Request) {
 
 	// Run hooks after creating the record
 	if err := hook.RunCreate(record); err != nil {
+		slog.Error("Failed to run hooks", "error", err)
 		http.Error(w, "Failed to run hooks", http.StatusInternalServerError)
 		return
 	}
