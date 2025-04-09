@@ -1,18 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS cage (
+CREATE TABLE IF NOT EXISTS record (
 	uuid char(27) NOT NULL PRIMARY KEY,
-	key VARCHAR(255) NOT NULL,
+	cage VARCHAR(255) NOT NULL,
 	data JSONB NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS cage_key ON cage (key);
+CREATE INDEX IF NOT EXISTS record_cage ON record (cage);
 
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS cage;
+DROP TABLE IF EXISTS record;
 
-DROP INDEX IF EXISTS cage_key;
+DROP INDEX IF EXISTS record_cage;
 
 -- +goose StatementEnd

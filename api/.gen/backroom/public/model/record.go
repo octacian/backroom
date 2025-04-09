@@ -11,8 +11,8 @@ import (
 	"github.com/octacian/backroom/api/db"
 )
 
-type Cage struct {
+type Record struct {
 	UUID db.UUID `sql:"primary_key"`
-	Key  string
+	Cage string
 	Data db.JSONB
 }

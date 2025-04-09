@@ -9,16 +9,16 @@ import (
 // Hook defines a hook configuration for a cage.
 type Hook config.Hook
 
-// ListHooksByKey retrieves all hooks for a given key from the configuration.
-func ListHooksByKey(key string) ([]Hook, error) {
+// ListHooksByCage retrieves all hooks for a given cage from the configuration.
+func ListHooksByCage(cageKey string) ([]Hook, error) {
 	var hooks []Hook
 	for _, hook := range config.RC.Hooks {
-		if hook.Key == key {
+		if hook.Key == cageKey {
 			hooks = append(hooks, Hook(hook))
 		}
 	}
 	if len(hooks) == 0 {
-		return nil, fmt.Errorf("no hooks found for key: %s", key)
+		return nil, fmt.Errorf("no hooks found for cage: %s", cageKey)
 	}
 	return hooks, nil
 }

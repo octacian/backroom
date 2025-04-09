@@ -46,10 +46,10 @@ func runServeCmd(cmd *cobra.Command, args []string) {
 	}))
 
 	// Set up routes
-	r.Post("/record/create/{key}", httphandle.HandleCreateRecord)
+	r.Post("/record/create", httphandle.HandleCreateRecord)
 	r.Get("/record/{uuid}", httphandle.HandleGetRecord)
-	r.Get("/cage/{key}", httphandle.HandleListRecordsByKey)
-	r.Get("/keys", httphandle.HandleListKeys)
+	r.Get("/cage/{key}", httphandle.HandleListRecordsByCage)
+	r.Get("/cages", httphandle.HandleListCages)
 	r.Delete("/record/{uuid}", httphandle.HandleDeleteRecord)
 	r.Delete("/cage/{key}", httphandle.HandleDeleteRecordsByKey)
 	r.Get("/health", handleHealthCheck)

@@ -9,21 +9,23 @@ import (
 	"github.com/octacian/backroom/api/db"
 )
 
-// Cage stores
-type Cage model.Cage
+// Record is a caged entry, identified by UUID, grouped by cage key, and
+// containing some data.
+// Wraps generated model.Record type.
+type Record model.Record
 
 // NewRecord returns a new caged record, identified by a key and storing some data.
-func NewRecord(key string, data db.JSONB) *Cage {
-	return &Cage{
+func NewRecord(cage string, data db.JSONB) *Record {
+	return &Record{
 		UUID: db.NewUUID(),
-		Key:  key,
+		Cage: cage,
 		Data: data,
 	}
 }
 
-// NewRecordFromString returns a new caged record, identified by a key and
-// storing some data in string format.
-func NewRecordFromString(key string, data string) (*Cage, error) {
+// NewRecordFromString returns a new caged record, identified by a cage key
+// and storing some JSON data marshalled to string format.
+func NewRecordFromString(key string, data string) (*Record, error) {
 	var jsonb db.JSONB
 	if err := json.Unmarshal([]byte(data), &jsonb); err != nil {
 		return nil, err
@@ -33,8 +35,8 @@ func NewRecordFromString(key string, data string) (*Cage, error) {
 }
 
 // CreateRecord creates a new caged record in the database
-func CreateRecord(cage *Cage) error {
-	insert := table.Cage.INSERT(table.Cage.AllColumns).MODEL(cage)
+func CreateRecord(cage *Record) error {
+	insert := table.Record.INSERT(table.Record.AllColumns).MODEL(cage)
 
 	_, err := insert.Exec(db.SQLDB)
 	if err != nil {
@@ -44,14 +46,14 @@ func CreateRecord(cage *Cage) error {
 	return nil
 }
 
-// GetRecord retrieves a specific caged record from the database by its UUID.
-func GetRecord(uuid db.UUID) (*Cage, error) {
-	stmt := table.Cage.SELECT(table.Cage.AllColumns).
-		WHERE(table.Cage.UUID.EQ(postgres.UUID(uuid))).
-		ORDER_BY(table.Cage.UUID.DESC()).
+// GetRecord retrieves a specific record from the database by its UUID.
+func GetRecord(uuid db.UUID) (*Record, error) {
+	stmt := table.Record.SELECT(table.Record.AllColumns).
+		WHERE(table.Record.UUID.EQ(postgres.UUID(uuid))).
+		ORDER_BY(table.Record.UUID.DESC()).
 		LIMIT(1)
 
-	var cage Cage
+	var cage Record
 	err := stmt.Query(db.SQLDB, &cage)
 	if err != nil {
 		return nil, err
@@ -60,13 +62,13 @@ func GetRecord(uuid db.UUID) (*Cage, error) {
 	return &cage, nil
 }
 
-// ListRecordsByKey retrieves all caged records with a common key from the database.
-func ListRecordsByKey(key string) ([]*Cage, error) {
-	stmt := table.Cage.SELECT(table.Cage.AllColumns).
-		WHERE(table.Cage.Key.EQ(postgres.String(key))).
-		ORDER_BY(table.Cage.UUID.DESC())
+// ListRecordsByCage retrieves all records belonging to a common cage from the database.
+func ListRecordsByCage(cage string) ([]*Record, error) {
+	stmt := table.Record.SELECT(table.Record.AllColumns).
+		WHERE(table.Record.Cage.EQ(postgres.String(cage))).
+		ORDER_BY(table.Record.UUID.DESC())
 
-	var cages []*Cage
+	var cages []*Record
 	err := stmt.Query(db.SQLDB, &cages)
 	if err != nil {
 		return nil, err
@@ -75,23 +77,23 @@ func ListRecordsByKey(key string) ([]*Cage, error) {
 	return cages, nil
 }
 
-// ListCageKeys retrieves all unique cage keys from the database.
-func ListCageKeys() ([]string, error) {
-	stmt := table.Cage.SELECT(table.Cage.Key).DISTINCT()
+// ListCages retrieves all unique cages from the database.
+func ListCages() ([]string, error) {
+	stmt := table.Record.SELECT(table.Record.Cage).DISTINCT()
 
-	var keys []string
-	err := stmt.Query(db.SQLDB, &keys)
+	var cages []string
+	err := stmt.Query(db.SQLDB, &cages)
 	if err != nil {
 		return nil, err
 	}
 
-	return keys, nil
+	return cages, nil
 }
 
-// DeleteRecord deletes a caged record from the database by its UUID.
+// DeleteRecord deletes a record from the database by its UUID.
 func DeleteRecord(uuid db.UUID) error {
-	stmt := table.Cage.DELETE().
-		WHERE(table.Cage.UUID.EQ(postgres.UUID(uuid)))
+	stmt := table.Record.DELETE().
+		WHERE(table.Record.UUID.EQ(postgres.UUID(uuid)))
 
 	_, err := stmt.Exec(db.SQLDB)
 	if err != nil {
@@ -101,11 +103,11 @@ func DeleteRecord(uuid db.UUID) error {
 	return nil
 }
 
-// DeleteCage deletes all caged records with a common key from the database.
+// DeleteCage deletes all records belonging to a common cage from the database.
 // Returns the number of deleted records.
-func DeleteCage(key string) (int64, error) {
-	stmt := table.Cage.DELETE().
-		WHERE(table.Cage.Key.EQ(postgres.String(key)))
+func DeleteCage(cage string) (int64, error) {
+	stmt := table.Record.DELETE().
+		WHERE(table.Record.Cage.EQ(postgres.String(cage)))
 
 	res, err := stmt.Exec(db.SQLDB)
 	if err != nil {

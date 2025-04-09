@@ -15,26 +15,26 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(cageCmd)
-	cageCmd.AddCommand(cageCreateRecordCmd)
-	cageCmd.AddCommand(cageGetRecordCmd)
-	cageGetRecordCmd.Flags().BoolP("clean", "c", false, "clean output suitable for machine parsing")
-	cageCmd.AddCommand(cageListRecordsByKeyCmd)
-	cageCmd.AddCommand(cageListKeysCmd)
-	cageCmd.AddCommand(cageDeleteRecordCmd)
-	cageCmd.AddCommand(cageDeleteCageCmd)
+	rootCmd.AddCommand(recordCmd)
+	recordCmd.AddCommand(recordCreateCmd)
+	recordCmd.AddCommand(recordGetCmd)
+	recordGetCmd.Flags().BoolP("clean", "c", false, "clean output suitable for machine parsing")
+	recordCmd.AddCommand(recordListByCageCmd)
+	recordCmd.AddCommand(recordListCagesCmd)
+	recordCmd.AddCommand(recordDeleteCmd)
+	recordCmd.AddCommand(recordDeleteCageCmd)
 }
 
-var cageCmd = &cobra.Command{
-	Use:   "cage",
-	Short: "Manage caged records",
+var recordCmd = &cobra.Command{
+	Use:   "record",
+	Short: "Manage backroom records",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
 }
 
-var cageCreateRecordCmd = &cobra.Command{
-	Use:   "create [KEY] [JSON|JSON FILE|STDIN]",
+var recordCreateCmd = &cobra.Command{
+	Use:   "create [CAGE] [JSON|JSON FILE|STDIN]",
 	Short: "Create a new caged record",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -90,7 +90,7 @@ var cageCreateRecordCmd = &cobra.Command{
 	},
 }
 
-var cageGetRecordCmd = &cobra.Command{
+var recordGetCmd = &cobra.Command{
 	Use:   "get [UUID]",
 	Short: "Get a caged record by UUID",
 	Args:  cobra.ExactArgs(1),
@@ -134,22 +134,22 @@ var cageGetRecordCmd = &cobra.Command{
 	},
 }
 
-var cageListRecordsByKeyCmd = &cobra.Command{
-	Use:   "list [KEY]",
-	Short: "List all caged records by key",
+var recordListByCageCmd = &cobra.Command{
+	Use:   "list [CAGE]",
+	Short: "List all records belonging to a common cage",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
+		cageKey := args[0]
 
 		// List all caged records by key
-		records, err := cage.ListRecordsByKey(key)
+		records, err := cage.ListRecordsByCage(cageKey)
 		if err != nil {
 			cmd.PrintErr("Error listing caged records:", err)
 			return
 		}
 
 		if len(records) == 0 {
-			cmd.Println("No caged records found for key:", key)
+			cmd.Println("No caged records found for key:", cageKey)
 			return
 		}
 
@@ -165,18 +165,18 @@ var cageListRecordsByKeyCmd = &cobra.Command{
 	},
 }
 
-var cageListKeysCmd = &cobra.Command{
-	Use:   "list-keys",
-	Short: "List all unique cage keys",
+var recordListCagesCmd = &cobra.Command{
+	Use:   "list-cages",
+	Short: "List all unique cages",
 	Run: func(cmd *cobra.Command, args []string) {
-		keys, err := cage.ListCageKeys()
+		keys, err := cage.ListCages()
 		if err != nil {
-			cmd.PrintErr("Error listing cage keys:", err)
+			cmd.PrintErr("Error listing cages:", err)
 			return
 		}
 
 		if len(keys) == 0 {
-			cmd.Println("No cage keys found")
+			cmd.Println("No cages found")
 			return
 		}
 
@@ -186,9 +186,9 @@ var cageListKeysCmd = &cobra.Command{
 	},
 }
 
-var cageDeleteRecordCmd = &cobra.Command{
+var recordDeleteCmd = &cobra.Command{
 	Use:   "delete [UUID]",
-	Short: "Delete a caged record by UUID",
+	Short: "Delete a record by UUID",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		uuid, err := db.ParseUUID(args[0])
@@ -200,28 +200,28 @@ var cageDeleteRecordCmd = &cobra.Command{
 		// Delete the caged record
 		err = cage.DeleteRecord(uuid)
 		if err != nil {
-			cmd.PrintErr("Error deleting caged record:", err)
+			cmd.PrintErr("Error deleting record:", err)
 			return
 		}
 
-		cmd.Println("Caged record deleted with UUID:", uuid)
+		cmd.Println("Record deleted with UUID:", uuid)
 	},
 }
 
-var cageDeleteCageCmd = &cobra.Command{
-	Use:   "delete-cage [KEY]",
-	Short: "Delete all caged records by key",
+var recordDeleteCageCmd = &cobra.Command{
+	Use:   "delete-cage [CAGE]",
+	Short: "Delete all records belonging to a common cage",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
+		cageKey := args[0]
 
-		// Delete all caged records by key
-		count, err := cage.DeleteCage(key)
+		// Delete all caged records by cageKey
+		count, err := cage.DeleteCage(cageKey)
 		if err != nil {
 			cmd.PrintErr("Error deleting caged records:", err)
 			return
 		}
 
-		cmd.Printf("%d caged records deleted for key: %s\n", count, key)
+		cmd.Printf("%d caged records deleted for cage: %s\n", count, cageKey)
 	},
 }

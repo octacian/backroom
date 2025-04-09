@@ -6,10 +6,10 @@ import (
 	"github.com/octacian/backroom/api/cage"
 )
 
-// RunCreate runs all create hooks for a new caged record.
-func RunCreate(cage *cage.Cage) error {
+// RunCreate runs all create hooks for a new record.
+func RunCreate(record *cage.Record) error {
 	// get the list of hooks for the key
-	hooks, err := ListHooksByKey(cage.Key)
+	hooks, err := ListHooksByCage(record.Cage)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func RunCreate(cage *cage.Cage) error {
 			return err
 		}
 
-		if err := adapter.Run(&hook, cage); err != nil {
+		if err := adapter.Run(&hook, record); err != nil {
 			slog.Error("Failed to run create hook", "hook", hook, "error", err)
 			return err
 		}

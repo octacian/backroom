@@ -49,8 +49,8 @@ func (a *SMTPAdapter) FromAddress() string {
 	return fmt.Sprintf("%s <%s>", fromName, config.RC.Mail.FromAddress)
 }
 
-// Run executes the SMTPAdapter with the given hook and cage.
-func (a *SMTPAdapter) Run(hook *Hook, cage *cage.Cage) error {
+// Run executes the SMTPAdapter with the given hook and record.
+func (a *SMTPAdapter) Run(hook *Hook, record *cage.Record) error {
 	message := mail.NewMsg()
 
 	if err := message.From(a.FromAddress()); err != nil {
@@ -61,18 +61,18 @@ func (a *SMTPAdapter) Run(hook *Hook, cage *cage.Cage) error {
 		return err
 	}
 
-	jsonText, err := json.MarshalIndent(cage.Data, "", "  ")
+	jsonText, err := json.MarshalIndent(record.Data, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	message.Subject(fmt.Sprintf("%s: new record created", cage.Key))
-	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("New %s record %s created\n\n%s", cage.Key, cage.UUID, jsonText))
+	message.Subject(fmt.Sprintf("%s: new record created", record.Cage))
+	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("New %s record %s created\n\n%s", record.Cage, record.UUID, jsonText))
 
 	if err := a.client.DialAndSend(message); err != nil {
 		return err
 	}
 
-	slog.Info("SMTPAdapter sent email", "to", hook.Target, "uuid", cage.UUID)
+	slog.Info("SMTPAdapter sent email", "to", hook.Target, "uuid", record.UUID)
 	return nil
 }

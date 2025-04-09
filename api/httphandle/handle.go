@@ -12,7 +12,7 @@ import (
 
 // requestCreateRecord is the request body for creating a new caged record.
 type requestCreateRecord struct {
-	Key  string   `json:"key"`
+	Cage string   `json:"cage"`
 	Data db.JSONB `json:"data"`
 }
 
@@ -24,26 +24,19 @@ type responseDelete struct {
 
 // HandleCreateRecord handles the creation of a new caged record. Expects
 // a JSON payload with the record data. Returns the created record as JSON.
-// Cage key is passed as a URL parameter called `key`.
 func HandleCreateRecord(w http.ResponseWriter, r *http.Request) {
-	key := chi.URLParam(r, "key")
-	if key == "" {
-		http.Error(w, "Missing cage key", http.StatusBadRequest)
-		return
-	}
-
 	var req requestCreateRecord
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
 		return
 	}
 
-	if req.Key != key {
-		http.Error(w, "Cage key mismatch", http.StatusBadRequest)
+	if req.Cage == "" {
+		http.Error(w, "Missing cage key", http.StatusBadRequest)
 		return
 	}
 
-	record := cage.NewRecord(key, req.Data)
+	record := cage.NewRecord(req.Cage, req.Data)
 	if err := cage.CreateRecord(record); err != nil {
 		http.Error(w, "Failed to create record", http.StatusInternalServerError)
 		return
@@ -83,16 +76,16 @@ func HandleGetRecord(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(record)
 }
 
-// HandleListRecordsByKey handles the retrieval of all caged records by their key.
+// HandleListRecordsByCage handles the retrieval of all caged records by their key.
 // Expects the key as a URL parameter. Returns the records as JSON.
-func HandleListRecordsByKey(w http.ResponseWriter, r *http.Request) {
+func HandleListRecordsByCage(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
 	if key == "" {
 		http.Error(w, "Missing cage key", http.StatusBadRequest)
 		return
 	}
 
-	records, err := cage.ListRecordsByKey(key)
+	records, err := cage.ListRecordsByCage(key)
 	if err != nil {
 		http.Error(w, "Failed to retrieve records", http.StatusInternalServerError)
 		return
@@ -101,12 +94,12 @@ func HandleListRecordsByKey(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(records)
 }
 
-// HandleListKeys handles the retrieval of all unique cage keys.
+// HandleListCages handles the retrieval of all unique cage keys.
 // Returns the keys as JSON.
-func HandleListKeys(w http.ResponseWriter, r *http.Request) {
-	keys, err := cage.ListCageKeys()
+func HandleListCages(w http.ResponseWriter, r *http.Request) {
+	keys, err := cage.ListCages()
 	if err != nil {
-		http.Error(w, "Failed to retrieve keys", http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve cages", http.StatusInternalServerError)
 		return
 	}
 
