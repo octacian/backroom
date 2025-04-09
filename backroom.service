@@ -1,0 +1,13 @@
+[Unit]
+Description=backroom data aggregator
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=backroom
+WorkingDirectory=/home/backroom
+ExecStart=bash -c './backroom serve'
+
+[Install]
+WantedBy=multi-user.target
