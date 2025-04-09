@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/octacian/backroom/api/cage"
+	"github.com/octacian/backroom/api/config"
 	"github.com/spf13/cobra"
 )
 
@@ -50,6 +53,15 @@ func runServeCmd(cmd *cobra.Command, args []string) {
 	r.Delete("/record/{uuid}", cage.HandleDeleteRecord)
 	r.Delete("/cage/{key}", cage.HandleDeleteRecordsByKey)
 	r.Get("/health", handleHealthCheck)
+
+	// Start the server
+	slog.Info("Listening", "address", config.RC.APIListen, "url", config.RC.APIURL)
+
+	err := http.ListenAndServe(config.RC.APIListen, r)
+	if err != nil {
+		slog.Error("Failed to start server", "error", err)
+		os.Exit(1)
+	}
 }
 
 // handleHealthCheck is a simple health check endpoint.

@@ -7,6 +7,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Hook defines a hook configuration for a cage.
+type Hook struct {
+	// Key is the identifier for the cage.
+	Key string `mapstructure:"key" validate:"required"`
+
+	// Adapter is the name of the adapter to use for the hook.
+	// Valid values are "log", "mail".
+	Adapter string `mapstructure:"adapter" validate:"oneof=log mail"`
+
+	// Target is the target log prefix or email for the hook.
+	Target string `mapstructure:"target" validate:"required"`
+}
+
 // Config defines the expected environment variables (see .env.example.yml)
 type Config struct {
 	// Environment is the deployment environment.
@@ -52,7 +65,7 @@ type Config struct {
 			// Host is the hostname of the SMTP server.
 			Host string `mapstructure:"host" validate:"omitempty,hostname"`
 			// Port is the port of the SMTP server.
-			Port string `mapstructure:"port" validate:"omitempty,min=1,max=65535"`
+			Port int `mapstructure:"port" validate:"omitempty,min=1,max=65535"`
 
 			// Username is the username to authenticate with the SMTP server for sending mail.
 			Username string `mapstructure:"username"`
@@ -76,6 +89,9 @@ type Config struct {
 	// Valid values are "smtp", "sendgrid", "log-only".
 	// Defaults to "smtp" if unset.
 	DeliveryMethod string `mapstructure:"delivery_method" validate:"oneof=smtp sendgrid log-only"`
+
+	// Hooks stores hook configuration for caged records.
+	Hooks []Hook `mapstructure:"cages"`
 }
 
 // RC stores the current runtime configuration.

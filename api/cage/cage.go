@@ -7,6 +7,7 @@ import (
 	"github.com/octacian/backroom/api/.gen/backroom/public/model"
 	"github.com/octacian/backroom/api/.gen/backroom/public/table"
 	"github.com/octacian/backroom/api/db"
+	"github.com/octacian/backroom/api/hook"
 )
 
 // Cage stores
@@ -38,6 +39,11 @@ func CreateRecord(cage *Cage) error {
 
 	_, err := insert.Exec(db.SQLDB)
 	if err != nil {
+		return err
+	}
+
+	// run any matching hooks
+	if err := hook.RunCreate(cage); err != nil {
 		return err
 	}
 
