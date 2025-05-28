@@ -3,12 +3,29 @@ package config
 import (
 	"log/slog"
 
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
 
+// HookEnv defines the environment variables used to evaluate hook expressions.
+type HookEnv struct {
+	Cage map[string]any `expr:"cage"`
+}
+
 // Hook defines a hook configuration for a cage.
 type Hook struct {
+	// Actions are any actions that triggers the hook.
+	// Valid values are "create", "update", "delete".
+	Action []string `mapstructure:"action" validate:"gt=0,dive,oneof=create update delete"`
+
+	// If is an optional condition that must be met for the hook to run.
+	// Cage data is available in the context as `cage.*`. See Expr for syntax.
+	// https://expr-lang.org/docs/language-definition
+	If        string `mapstructure:"if"`
+	ifProgram *vm.Program
+
 	// Cage is the identifier key for a cage.
 	Cage string `mapstructure:"cage" validate:"required"`
 
@@ -18,6 +35,29 @@ type Hook struct {
 
 	// Target is the target log prefix or email for the hook.
 	Target string `mapstructure:"target" validate:"required"`
+}
+
+// Eval returns whether or not the hook condition is met.
+func (h *Hook) Eval(cageData map[string]any) (bool, error) {
+	if h.ifProgram == nil {
+		return true, nil // No condition, always true
+	}
+
+	// Populate the environment with the cage data
+	env := &HookEnv{
+		Cage: cageData,
+	}
+
+	// Evaluate the expression
+	output, err := expr.Run(h.ifProgram, env)
+	if err != nil {
+		return false, err
+	}
+
+	// Ensure the output is a boolean
+	ok := output.(bool)
+
+	return ok, nil
 }
 
 // Config defines the expected environment variables (see .env.example.yml)
@@ -91,7 +131,7 @@ type Config struct {
 	DeliveryMethod string `mapstructure:"delivery_method" validate:"oneof=smtp sendgrid log-only"`
 
 	// Hooks stores hook configuration for caged records.
-	Hooks []Hook `mapstructure:"hooks"`
+	Hooks []Hook `mapstructure:"hooks" validate:"dive"`
 }
 
 // RC stores the current runtime configuration.
@@ -115,4 +155,15 @@ func Init() {
 	}
 
 	slog.Info("Viper loaded configuration", "file", viper.GetViper().ConfigFileUsed())
+
+	// Compile any conditional hook expressions.
+	for i, hook := range RC.Hooks {
+		if hook.If != "" {
+			program, err := expr.Compile(hook.If, expr.AsBool(), expr.Env(&HookEnv{}))
+			if err != nil {
+				panic(err)
+			}
+			RC.Hooks[i].ifProgram = program
+		}
+	}
 }

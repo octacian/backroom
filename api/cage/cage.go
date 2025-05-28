@@ -90,6 +90,20 @@ func ListCages() ([]string, error) {
 	return cages, nil
 }
 
+// UpdateRecord updates an existing record in the database.
+func UpdateRecord(record *Record) error {
+	stmt := table.Record.UPDATE(table.Record.Data).
+		MODEL(record).
+		WHERE(table.Record.UUID.EQ(postgres.UUID(record.UUID)))
+
+	_, err := stmt.Exec(db.SQLDB)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // DeleteRecord deletes a record from the database by its UUID.
 func DeleteRecord(uuid db.UUID) error {
 	stmt := table.Record.DELETE().

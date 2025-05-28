@@ -2,6 +2,7 @@ package httphandle
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -21,6 +22,16 @@ type requestCreateRecord struct {
 type responseDelete struct {
 	Success bool `json:"success"`
 	Deleted int  `json:"deleted"`
+}
+
+// wrapHookRunner just vibes for me.
+func wrapHookRunner(w http.ResponseWriter, action hook.Action, record *cage.Record) bool {
+	if err := hook.RunHooksByAction(action, record); err != nil {
+		slog.Error("Failed to run hooks", "action", action, "error", err)
+		http.Error(w, fmt.Sprintf("Failed to run %s hooks", action), http.StatusInternalServerError)
+		return false
+	}
+	return true
 }
 
 // HandleCreateRecord handles the creation of a new caged record. Expects
@@ -44,9 +55,7 @@ func HandleCreateRecord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Run hooks after creating the record
-	if err := hook.RunCreate(record); err != nil {
-		slog.Error("Failed to run hooks", "error", err)
-		http.Error(w, "Failed to run hooks", http.StatusInternalServerError)
+	if ok := wrapHookRunner(w, hook.ActionCreate, record); !ok {
 		return
 	}
 
@@ -108,6 +117,53 @@ func HandleListCages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(keys)
 }
 
+// HandleUpdateRecord handles the update of an existing caged record.
+// Expects the UUID as a URL parameter and a JSON payload matching requestCreateRecord.
+// Returns the updated record as JSON.
+func HandleUpdateRecord(w http.ResponseWriter, r *http.Request) {
+	uuidStr := chi.URLParam(r, "uuid")
+	if uuidStr == "" {
+		http.Error(w, "Missing UUID", http.StatusBadRequest)
+		return
+	}
+
+	uuid, err := db.ParseUUID(uuidStr)
+	if err != nil {
+		http.Error(w, "Invalid UUID format", http.StatusBadRequest)
+		return
+	}
+
+	var req requestCreateRecord
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
+
+	if req.Cage == "" {
+		http.Error(w, "Missing cage key", http.StatusBadRequest)
+		return
+	}
+
+	record, err := cage.GetRecord(uuid)
+	if err != nil {
+		http.Error(w, "Failed to retrieve record", http.StatusInternalServerError)
+		return
+	}
+	record.Data = req.Data
+
+	if err := cage.UpdateRecord(record); err != nil {
+		http.Error(w, "Failed to update record", http.StatusInternalServerError)
+		return
+	}
+
+	// Run update hooks after updating the record
+	if ok := wrapHookRunner(w, hook.ActionUpdate, record); !ok {
+		return
+	}
+
+	json.NewEncoder(w).Encode(record)
+}
+
 // HandleDeleteRecord handles the deletion of a caged record by its UUID.
 // Expects the UUID as a URL parameter.
 // Returns a success message as JSON.
@@ -124,8 +180,19 @@ func HandleDeleteRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	record, err := cage.GetRecord(uuid)
+	if err != nil {
+		http.Error(w, "Failed to retrieve record", http.StatusInternalServerError)
+		return
+	}
+
 	if err := cage.DeleteRecord(uuid); err != nil {
 		http.Error(w, "Failed to delete record", http.StatusInternalServerError)
+		return
+	}
+
+	// Run delete hooks after deleting the record
+	if ok := wrapHookRunner(w, hook.ActionDelete, record); !ok {
 		return
 	}
 

@@ -50,7 +50,7 @@ func (a *SMTPAdapter) FromAddress() string {
 }
 
 // Run executes the SMTPAdapter with the given hook and record.
-func (a *SMTPAdapter) Run(hook *Hook, record *cage.Record) error {
+func (a *SMTPAdapter) Run(action Action, hook *Hook, record *cage.Record) error {
 	message := mail.NewMsg()
 
 	if err := message.From(a.FromAddress()); err != nil {
@@ -66,8 +66,8 @@ func (a *SMTPAdapter) Run(hook *Hook, record *cage.Record) error {
 		return err
 	}
 
-	message.Subject(fmt.Sprintf("%s: new record created", record.Cage))
-	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("%s record %s created\n\n%s", record.Cage, record.UUID, jsonText))
+	message.Subject(fmt.Sprintf("%s: record %s", record.Cage, action))
+	message.SetBodyString(mail.TypeTextPlain, fmt.Sprintf("%s record %s %s\n\n%s", record.Cage, action, record.UUID, jsonText))
 
 	if err := a.client.DialAndSend(message); err != nil {
 		return err

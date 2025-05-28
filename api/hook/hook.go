@@ -5,7 +5,7 @@ import (
 )
 
 // Hook defines a hook configuration for a cage.
-type Hook config.Hook
+type Hook = config.Hook
 
 // ListHooksByCage retrieves all hooks for a given cage from the configuration.
 func ListHooksByCage(cageKey string) ([]Hook, error) {

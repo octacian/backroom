@@ -8,6 +8,16 @@ import (
 
 type JSONB map[string]any
 
+// NewJSONB creates a new JSONB value from a map[string]any.
+func NewJSONB(data map[string]any) JSONB {
+	return JSONB(data)
+}
+
+// ToMap converts the JSONB value to a map[string]any.
+func (j JSONB) ToMap() map[string]any {
+	return map[string]any(j)
+}
+
 // Scan implements the sql.Scanner interface. It supports converting from
 // string, []byte, or nil into a JSONB value. Attempting to convert from
 // any other type will return an error.

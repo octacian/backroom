@@ -14,7 +14,7 @@ var ErrBadAdapter = errors.New("bad adapter")
 // Adapter defines expected execution methods for a hook adapter.
 type Adapter interface {
 	// Run executes the adapter with the given hook and record.
-	Run(hook *Hook, record *cage.Record) error
+	Run(action Action, hook *Hook, record *cage.Record) error
 }
 
 // ALLOWED_ADAPTERS is a map of allowed hook adapter names to their respective
@@ -53,7 +53,7 @@ func GetAdapter(name string) (Adapter, error) {
 type LogAdapter struct{}
 
 // Run executes the LogAdapter with the given hook and record.
-func (a *LogAdapter) Run(hook *Hook, record *cage.Record) error {
-	slog.Info("Caged record created", "key", record.Cage, "uuid", record.UUID)
+func (a *LogAdapter) Run(action Action, hook *Hook, record *cage.Record) error {
+	slog.Info("LogAdapter", "action", action, "key", record.Cage, "uuid", record.UUID)
 	return nil
 }
